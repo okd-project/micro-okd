@@ -1,0 +1,69 @@
+From 97184fa356c7e05547f6d870c316fe318929ba6f Mon Sep 17 00:00:00 2001
+From: SupremeMortal <6178101+SupremeMortal@users.noreply.github.com>
+Date: Sun, 13 Apr 2025 00:22:08 +0100
+Subject: [PATCH] kube-proxy rebase
+
+---
+ scripts/auto-rebase/rebase.sh | 39 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+
+diff --git a/scripts/auto-rebase/rebase.sh b/scripts/auto-rebase/rebase.sh
+index fb863f882..bdd863874 100755
+--- a/scripts/auto-rebase/rebase.sh
++++ b/scripts/auto-rebase/rebase.sh
+@@ -799,6 +799,7 @@ EOF
+ 
+     update_olm_images
+     update_multus_images
++    update_kube_proxy_images
+ 
+     popd >/dev/null
+ }
+@@ -951,6 +952,44 @@ checkout_rebase_branch() {
+     git checkout -b "${rebase_branch}"
+ }
+ 
++update_kube_proxy_images() {
++    title "Rebasing Kube Proxy images"
++
++    for goarch in amd64 arm64; do
++        arch=${GOARCH_TO_UNAME_MAP["${goarch}"]:-noarch}
++
++        local release_file="${STAGING_DIR}/release_${goarch}.json"
++        local kustomization_arch_file="${REPOROOT}/assets/optional/kube-proxy/kustomization.${arch}.yaml"
++        local kube_proxy_release_json="${REPOROOT}/assets/optional/kube-proxy/release-kube-proxy-${arch}.json"
++
++        local base_release
++        base_release=$(jq -r ".metadata.version" "${release_file}")
++        jq -n "{\"release\": {\"base\": \"$base_release\"}, \"images\": {}}" > "${kube_proxy_release_json}"
++
++        # Create extra kustomization for each arch in separate file.
++        # Right file (depending on arch) should be appended during rpmbuild to kustomization.yaml.
++        cat <<EOF > "${kustomization_arch_file}"
++
++images:
++EOF
++
++        for container in kube-proxy; do
++            local new_image
++            new_image=$(jq -r ".references.spec.tags[] | select(.name == \"${container}\") | .from.name" "${release_file}")
++            local new_image_name="${new_image%@*}"
++            local new_image_digest="${new_image#*@}"
++
++            cat <<EOF >> "${kustomization_arch_file}"
++  - name: ${container}
++    newName: ${new_image_name}
++    digest: ${new_image_digest}
++EOF
++
++            yq -i -o json ".images += {\"${container}\": \"${new_image}\"}" "${kube_proxy_release_json}"
++        done  # for container
++    done  # for goarch
++}
++
+ update_multus_images() {
+     title "Rebasing Multus images"
+ 
+-- 
+2.49.0
+
