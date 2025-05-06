@@ -24,7 +24,7 @@ endif
 oc-client:
 	@echo "Downloading OKD client for Linux..."
 	mkdir -p $(BIN)
-	curl -L -o $(BIN)/$(OC_CLIENT).tar.gz https://github.com/okd-project/okd-scos/releases/download/$(VERSION)/$(OC_CLIENT).tar.gz
+	curl -L -o $(BIN)/$(OC_CLIENT).tar.gz https://github.com/okd-project/okd/releases/download/$(VERSION)/$(OC_CLIENT).tar.gz
 	@echo "Extracting OKD client..."
 	tar -xzf $(BIN)/$(OC_CLIENT).tar.gz -C $(BIN)
 	@echo "Cleaning up..."
