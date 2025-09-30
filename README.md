@@ -1,3 +1,9 @@
+# ⚠️ Project Moved ⚠️
+
+**This project is now maintained in the upstream MicroShift organization.**
+
+👉 [microshift-io/microshift](https://github.com/microshift-io/microshift) 👈
+
 # μOKD (Micro OKD)
 
 μOKD is a lightweight, single-node OKD cluster designed for edge deployment. It is built on top of the OKD 4.x distribution and is optimized for low-resource environments. μOKD is ideal for developers and teams looking to run OKD on resource-constrained devices, in development environments, or home labs.
